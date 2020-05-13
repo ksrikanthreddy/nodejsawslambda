@@ -1,0 +1,157 @@
+openapi: 3.0.0
+info:
+  title: HPE API
+  description: API's for HPE User Interface
+  contact:
+    email: kollisreekanth@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.1
+servers:
+- url: https://virtserver.swaggerhub.com/ADP9529/hpe/1.0.1
+security:
+- BearerAuth: []
+tags:
+- name: user
+  description: Secured User calls
+paths:
+  /user:
+    get:
+      tags:
+      - user
+      summary: Get all users
+      description: Get all users available in the system
+      operationId: getAllUsers
+      responses:
+        "200":
+          description: all users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserModel'
+                x-content-type: application/json
+        "400":
+          description: bad input parameter
+        "401":
+          description: Access token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorModel'
+      security: []
+      x-swagger-router-controller: User
+    post:
+      tags:
+      - user
+      summary: adds a user item
+      description: Adds a user to the system
+      operationId: addUser
+      requestBody:
+        description: User to add
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserModel'
+      responses:
+        "201":
+          description: user created
+        "400":
+          description: invalid input, object invalid
+        "409":
+          description: an existing user already exists
+      x-swagger-router-controller: User
+  /login:
+    post:
+      tags:
+      - login
+      summary: validates a user
+      description: Validates a user against the system
+      operationId: login
+      requestBody:
+        description: User to validate
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserModel'
+      responses:
+        "200":
+          description: user validated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponseModel'
+        "400":
+          description: invalid input, object invalid
+        "404":
+          description: user not found
+      x-swagger-router-controller: Login
+components:
+  schemas:
+    UserModel:
+      required:
+      - password
+      - username
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        username:
+          type: string
+          example: User1
+        password:
+          type: string
+          example: password
+        createdDate:
+          type: string
+          format: date-time
+          example: 2016-08-29T09:12:33.001Z
+      example:
+        password: password
+        createdDate: 2016-08-29T09:12:33.001Z
+        id: d290f1ee-6c54-4b01-90e6-d701748f0851
+        username: User1
+    ErrorModel:
+      required:
+      - code
+      - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+    LoginResponseModel:
+      required:
+      - token
+      - userId
+      - username
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        username:
+          type: string
+          example: User1
+        token:
+          type: string
+          example: sdhfhgdsjfgsddfgjsgfjads=
+      example:
+        id: d290f1ee-6c54-4b01-90e6-d701748f0851
+        username: User1
+        token: sdhfhgdsjfgsddfgjsgfjads=
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
